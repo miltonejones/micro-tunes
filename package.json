@@ -4,7 +4,9 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
+    "restart": "bash stop.sh ;bash start.sh",
     "build": "ng build",
+    "build:prod": "ng build shared-utils && ng build home --configuration production && ng build list --configuration production && ng build grid --configuration production && ng build search --configuration production && ng build host-app --configuration production && node scripts/assemble-remotes.mjs",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
   },
@@ -23,18 +25,27 @@
   "private": true,
   "packageManager": "npm@10.8.2",
   "dependencies": {
+    "@angular-architects/native-federation": "^21.2.4",
+    "@angular/animations": "^21.0.0",
     "@angular/common": "^21.0.0",
     "@angular/compiler": "^21.0.0",
     "@angular/core": "^21.0.0",
     "@angular/forms": "^21.0.0",
     "@angular/platform-browser": "^21.0.0",
     "@angular/router": "^21.0.0",
+    "@softarc/native-federation-node": "^3.3.4",
+    "es-module-shims": "^1.5.12",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0"
   },
   "devDependencies": {
+    "@angular-devkit/build-angular": "^21.2.16",
+    "@angular/build": "^21.2.16",
     "@angular/cli": "^21.0.4",
     "@angular/compiler-cli": "^21.0.0",
-    "typescript": "~5.9.2"
+    "jsdom": "^28.0.0",
+    "ng-packagr": "^21.2.0",
+    "typescript": "~5.9.2",
+    "vitest": "^4.0.8"
   }
 }

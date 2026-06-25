@@ -1,0 +1,22 @@
+.modal-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-display);
+  font-weight: 700;
+}
+
+.modal-content {
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-lg);
+}
+
+.form-label {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.form-text {
+  color: var(--text-tertiary);
+}

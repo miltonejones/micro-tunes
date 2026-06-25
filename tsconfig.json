@@ -11,6 +11,11 @@
     "skipLibCheck": true,
     "isolatedModules": true,
     "experimentalDecorators": true,
+    "paths": {
+      "shared-utils": [
+        "./dist/shared-utils"
+      ]
+    },
     "importHelpers": true,
     "target": "ES2022",
     "module": "preserve"
@@ -21,5 +26,43 @@
     "strictInputAccessModifiers": true,
     "strictTemplates": true
   },
-  "files": []
+  "files": [],
+  "references": [
+    {
+      "path": "./projects/host-app/tsconfig.app.json"
+    },
+    {
+      "path": "./projects/host-app/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/home/tsconfig.app.json"
+    },
+    {
+      "path": "./projects/home/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/list/tsconfig.app.json"
+    },
+    {
+      "path": "./projects/list/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/grid/tsconfig.app.json"
+    },
+    {
+      "path": "./projects/grid/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/search/tsconfig.app.json"
+    },
+    {
+      "path": "./projects/search/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/shared-utils/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/shared-utils/tsconfig.spec.json"
+    }
+  ]
 }

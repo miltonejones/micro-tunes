@@ -1,0 +1,69 @@
+<div
+  class="toolbar d-flex align-items-center justify-content-between flex-nowrap gap-2"
+  [class.search-active]="searchOpen()"
+>
+  <a routerLink="/" class="brand">
+    <img class="brand-mark" src="sky-tunes-logo.png" alt="SkyTunes logo" />
+    <span class="brand-name">SkyTunes</span>
+  </a>
+
+  <nav class="d-flex flex-nowrap gap-1" role="group">
+    <a routerLink="/" [class.btn-primary]="activeSection() === 'home'" class="btn"
+      ><i class="fa-solid fa-house"></i> <span class="btn-label">Home</span></a
+    >
+    <a
+      [routerLink]="['/grid', 'artist', 1]"
+      [class.btn-primary]="activeSection() === 'artist'"
+      class="btn"
+      ><i class="fa-solid fa-microphone"></i> <span class="btn-label">Artists</span></a
+    >
+    <a
+      [routerLink]="['/grid', 'album', 1]"
+      [class.btn-primary]="activeSection() === 'album'"
+      class="btn"
+      ><i class="fa-solid fa-compact-disc"></i> <span class="btn-label">Albums</span></a
+    >
+    <a
+      [routerLink]="['/grid', 'genre', 1]"
+      [class.btn-primary]="activeSection() === 'genre'"
+      class="btn"
+      ><i class="fa-solid fa-tags"></i> <span class="btn-label">Genres</span></a
+    >
+    <a
+      [routerLink]="['/grid', 'playlist', 1]"
+      [class.btn-primary]="activeSection() === 'playlist'"
+      class="btn"
+      ><i class="fa-solid fa-list-ul"></i> <span class="btn-label">Playlists</span></a
+    >
+    <a [routerLink]="['/list', 1]" [class.btn-primary]="activeSection() === 'library'" class="btn"
+      ><i class="fa-solid fa-music"></i> <span class="btn-label">Library</span></a
+    >
+    <button type="button" class="btn" (click)="settingsPanel.toggle()">
+      <i class="fa-solid fa-gear"></i> <span class="btn-label">Settings</span>
+    </button>
+  </nav>
+
+  <button type="button" class="btn search-toggle" (click)="openSearch()">
+    <i class="fa-solid fa-magnifying-glass"></i>
+  </button>
+
+  <form class="d-flex gap-1 search-form" (submit)="onSearch($event, searchInput.value)">
+    <button type="button" class="btn search-back" (click)="closeSearch()">
+      <i class="fa-solid fa-arrow-left"></i>
+    </button>
+    <input #searchInput type="search" class="form-control" placeholder="Search..." />
+    <button type="submit" class="btn btn-outline-secondary">
+      <i class="fa-solid fa-magnifying-glass"></i>
+    </button>
+  </form>
+</div>
+
+<router-outlet />
+
+<app-audio-visualizer />
+
+<app-audio-player />
+
+<app-track-queue />
+
+<app-settings-modal />
