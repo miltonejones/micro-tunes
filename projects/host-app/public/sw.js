@@ -28,6 +28,10 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   const { request } = event;
+
+  // Only handle http(s) requests — ignore chrome-extension, blob, data, etc.
+  if (!request.url.startsWith('http')) return;
+
   const url = new URL(request.url);
 
   // Always go network for remote micro-frontend entry points

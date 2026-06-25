@@ -144,9 +144,13 @@ export class CastService {
   }
 
   private initialize(): void {
-    this.setupContext();
-    this.setupRemotePlayer();
-    setTimeout(() => this.syncAvailability(), 2000);
+    try {
+      this.setupContext();
+      this.setupRemotePlayer();
+      setTimeout(() => this.syncAvailability(), 2000);
+    } catch (e) {
+      console.warn('[CastService] initialization failed (Cast SDK not available):', e);
+    }
   }
 
   private setupContext(): void {
