@@ -311,16 +311,28 @@ export class CastService {
 
   private onSessionChanged(event: any): void {
     const sessionState: string = event.sessionState;
-    const session: cast.framework.CastSession | undefined = event.session;
 
     const connected =
       sessionState === cast.framework.SessionState.SESSION_STARTED ||
       sessionState === cast.framework.SessionState.SESSION_RESUMED;
 
     this.isConnected$.next(connected);
-    this.deviceName$.next(connected ? session?.receiver?.friendlyName ?? '' : '');
 
-    if (!connected) {
+    if (connected) {
+      // Pull the device name from the current session. Give the SDK a brief
+      // moment to populate the receiver details, retrying once if needed.
+      const name = getContext()?.getCurrentSession()?.receiver?.friendlyName;
+      if (name) {
+        this.deviceName$.next(name);
+      } else {
+        // The receiver details may not be ready yet — retry after a short delay.
+        setTimeout(() => {
+          const retryName = getContext()?.getCurrentSession()?.receiver?.friendlyName ?? '';
+          this.deviceName$.next(retryName);
+        }, 1000);
+      }
+    } else {
+      this.deviceName$.next('');
       this.isPlaying$.next(false);
       this.currentTime$.next(0);
       this.duration$.next(0);
