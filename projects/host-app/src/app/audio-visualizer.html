@@ -1,9 +1,9 @@
 @if (showPanel()) {
   <div class="audio-visualizer">
-    @if (castService.isConnected()) {
+    @if (isCasting()) {
       <div class="audio-visualizer__cast-overlay">
         <i class="fa-solid fa-cast"></i>
-        <span>Casting to {{ castService.deviceName() }}</span>
+        <span>{{ castDeviceName() ? 'Casting to ' + castDeviceName() : 'Casting' }}</span>
       </div>
     } @else {
       <canvas #canvasEl width="360" height="120"></canvas>

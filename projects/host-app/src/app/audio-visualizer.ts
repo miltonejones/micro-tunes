@@ -9,6 +9,7 @@ import {
   inject,
   signal,
 } from '@angular/core';
+import { Subscription } from 'rxjs';
 import { AudioPlayerCommandService, CastService } from 'shared-utils';
 import { AudioAnalyserService } from './audio-analyser.service';
 import { AudioVisualizerPanelService } from './audio-visualizer-panel.service';
@@ -29,11 +30,18 @@ export class AudioVisualizer implements OnInit, AfterViewInit, OnDestroy {
   private audioAnalyserService = inject(AudioAnalyserService);
   private audioPlayerCommand = inject(AudioPlayerCommandService);
   private visualizerPanel = inject(AudioVisualizerPanelService);
-  protected castService: CastService = inject(CastService);
+  private castService: CastService = inject(CastService);
   private animationFrameId?: number;
   private dataArray?: Uint8Array<ArrayBuffer>;
+  private subs: Subscription[] = [];
 
   hasTrack = signal(false);
+
+  /** Whether a Cast session is active — synced from CastService for reactive templates. */
+  protected isCasting = signal(false);
+
+  /** Current Cast device name — synced from CastService. */
+  protected castDeviceName = signal('');
 
   isVisible = computed(
     () => this.hasTrack() && this.audioAnalyserService.available() && this.visualizerPanel.isOpen(),
@@ -42,13 +50,17 @@ export class AudioVisualizer implements OnInit, AfterViewInit, OnDestroy {
   showPanel = computed(
     () =>
       this.isVisible() ||
-      (this.hasTrack() && this.castService.isConnected() && this.visualizerPanel.isOpen()),
+      (this.hasTrack() && this.isCasting() && this.visualizerPanel.isOpen()),
   );
 
   ngOnInit(): void {
-    this.audioPlayerCommand.currentTrack$.subscribe((track) => {
-      this.hasTrack.set(!!track);
-    });
+    this.subs.push(
+      this.audioPlayerCommand.currentTrack$.subscribe((track) => {
+        this.hasTrack.set(!!track);
+      }),
+      this.castService.isConnected$.subscribe((v) => this.isCasting.set(v)),
+      this.castService.deviceName$.subscribe((v) => this.castDeviceName.set(v)),
+    );
   }
 
   ngAfterViewInit(): void {
@@ -63,6 +75,7 @@ export class AudioVisualizer implements OnInit, AfterViewInit, OnDestroy {
     if (this.animationFrameId !== undefined) {
       cancelAnimationFrame(this.animationFrameId);
     }
+    for (const s of this.subs) s.unsubscribe();
   }
 
   private drawFrame(): void {
