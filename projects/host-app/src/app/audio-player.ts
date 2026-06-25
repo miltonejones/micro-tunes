@@ -54,6 +54,7 @@ export class AudioPlayer implements OnInit, OnDestroy {
   duration = signal(0);
   isExpanded = signal(false);
   protected isCasting = signal(false);
+  protected castVolume = signal(1);
 
   private playRequestId = 0;
   private corsRetryAttempted = false;
@@ -386,7 +387,17 @@ export class AudioPlayer implements OnInit, OnDestroy {
   }
 
   setVolume(volume: number): void {
-    this.audioEl.volume = Math.max(0, Math.min(1, volume));
+    if (this.isCasting()) {
+      this.castService.setVolume(volume);
+    } else {
+      this.audioEl.volume = Math.max(0, Math.min(1, volume));
+    }
+  }
+
+  onCastVolumeInput(event: Event): void {
+    const vol = Number((event.target as HTMLInputElement).value) / 100;
+    this.castVolume.set(vol);
+    this.castService.setVolume(vol);
   }
 
   advanceTrack(offset: number): void {
