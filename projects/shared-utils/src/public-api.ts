@@ -23,6 +23,9 @@ export { WikipediaQueryService } from './lib/wikipedia-query.service';
 
 export { CastService } from './lib/cast.service';
 export { ServiceWorkerUpdateService } from './lib/service-worker-update.service';
+export { ToastService } from './lib/toast.service';
+export type { ToastMessage } from './lib/toast.service';
+export { Toast } from './lib/toast';
 export { faveIcon } from './lib/favorite-icon';
 export { ImgFallbackDirective } from './lib/img-fallback.directive';
 export { MediaCard } from './lib/media-card';

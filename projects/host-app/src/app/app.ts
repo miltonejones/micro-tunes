@@ -2,6 +2,7 @@ import { Component, ElementRef, inject, signal, ViewChild } from '@angular/core'
 import { Title } from '@angular/platform-browser';
 import { NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router';
 import { filter } from 'rxjs';
+import { Toast } from 'shared-utils';
 import { AudioPlayer } from './audio-player';
 import { AudioVisualizer } from './audio-visualizer';
 import { SettingsModal } from './settings-modal';
@@ -73,7 +74,7 @@ function pageTitleFromUrl(url: string): string {
 
 @Component({
   selector: 'app-root',
-  imports: [RouterLink, RouterOutlet, AudioPlayer, AudioVisualizer, TrackQueue, SettingsModal],
+  imports: [RouterLink, RouterOutlet, AudioPlayer, AudioVisualizer, TrackQueue, SettingsModal, Toast],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
