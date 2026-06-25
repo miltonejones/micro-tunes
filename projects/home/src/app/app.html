@@ -17,6 +17,9 @@
                 <div class="carousel-subtitle">{{ item.Caption }}</div>
               }
             </div>
+            <a class="carousel-artist-link" [routerLink]="['/list', item.Type, item.ID, 1]">
+              Open artist <i class="fa-solid fa-chevron-right"></i>
+            </a>
           </div>
         }
       </div>

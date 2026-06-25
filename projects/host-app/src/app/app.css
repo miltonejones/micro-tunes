@@ -54,7 +54,9 @@ nav .btn,
   font-size: 0.875rem;
   padding: 0.5rem 0.9rem;
   flex-shrink: 0;
-  transition: background-color 0.2s ease, color 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
 }
 
 nav .btn:hover,
@@ -114,6 +116,20 @@ nav .btn.btn-primary {
   display: none;
 }
 
+.settings-toggle {
+  margin-left: auto;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  padding: 0.5rem 0.75rem;
+  flex-shrink: 0;
+}
+
+.settings-toggle:hover {
+  background-color: var(--surface-hover);
+  color: var(--text);
+}
+
 @media (max-width: 768px) {
   .brand-name {
     display: none;
@@ -143,6 +159,10 @@ nav .btn.btn-primary {
 
   .toolbar.search-active .brand,
   .toolbar.search-active .search-toggle {
+    display: none;
+  }
+
+  .toolbar.search-active .settings-toggle {
     display: none;
   }
 

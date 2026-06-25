@@ -2,6 +2,7 @@ import { Injectable, NgZone } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { ITrackItem } from './models';
 import { buildPlayerUrl } from './domain/track';
+import { ToastService } from './toast.service';
 
 /**
  * Lightweight ambient declarations for the Cast CAF Sender SDK globals
@@ -49,7 +50,7 @@ declare namespace cast.framework {
 
   interface RemotePlayerController {
     addEventListener(type: string, handler: (event: any) => void): void;
-    playOrPause(): void; seek(): void; setVolumeLevel(level: number): void;
+    playOrPause(): void; seek(): void; setVolumeLevel(): void;
   }
 }
 
@@ -90,7 +91,7 @@ export class CastService {
   private controller: cast.framework.RemotePlayerController | null = null;
   private timePollId: ReturnType<typeof setInterval> | null = null;
 
-  constructor(private zone: NgZone) { this.initWhenReady(); }
+  constructor(private zone: NgZone, private toast: ToastService) { this.initWhenReady(); }
 
   connect(): void { getContext()?.requestSession().catch(() => {}); }
 
@@ -107,11 +108,12 @@ export class CastService {
   }
 
   setVolume(level: number): void {
-    if (!this.controller) return;
-    this.controller.setVolumeLevel(Math.max(0, Math.min(1, level)));
+    if (!this.remotePlayer || !this.controller) return;
+    this.remotePlayer.volumeLevel = Math.max(0, Math.min(1, level));
+    this.controller.setVolumeLevel();
   }
 
-  loadTrack(track: ITrackItem): void {
+  loadTrack(track: ITrackItem, startTime = 0): void {
     const ctx = getContext();
     const session = ctx?.getCurrentSession();
     if (!session) return;
@@ -130,6 +132,7 @@ export class CastService {
 
     const request = new chrome.cast.media.LoadRequest(mediaInfo);
     request.autoplay = true;
+    if (startTime > 0) request.currentTime = startTime;
     session.loadMedia(request).catch(() => {});
   }
 
@@ -188,9 +191,9 @@ export class CastService {
       event.sessionState === cast.framework.SessionState.SESSION_RESUMED;
     this.isConnected$.next(connected);
     if (connected) {
-      this.deviceName$.next(
-        (event.session as any)?.receiver?.friendlyName ?? '',
-      );
+      const friendlyName = (event.session as any)?.receiver?.friendlyName ?? '';
+      this.deviceName$.next(friendlyName);
+      if (friendlyName) this.toast.show(`Casting to ${friendlyName}`);
     } else {
       this.deviceName$.next('');
       this.isPlaying$.next(false);
