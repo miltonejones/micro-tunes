@@ -5,6 +5,7 @@ import {
   OnInit,
   ViewChild,
   computed,
+  effect,
   inject,
   signal,
 } from '@angular/core';
@@ -57,7 +58,7 @@ export class AudioPlayer implements OnInit, OnDestroy {
   private playRequestId = 0;
   private corsRetryAttempted = false;
   private castTransitioning = false;
-
+  private wakeLock: WakeLockSentinel | null = null;
   progress = computed(() => (this.duration() ? (this.currentTime() / this.duration()) * 100 : 0));
   currentTimeLabel = computed(() => formatDuration(this.currentTime()));
   durationLabel = computed(() => formatDuration(this.duration()));
@@ -245,6 +246,34 @@ export class AudioPlayer implements OnInit, OnDestroy {
     this.play();
   }
 
+  // ── Wake lock (keep screen on while playing) ───────────────────────────────
+
+  private async acquireWakeLock(): Promise<void> {
+    if (this.wakeLock) return;
+    try {
+      this.wakeLock = await navigator.wakeLock.request('screen');
+      this.wakeLock.addEventListener('release', () => { this.wakeLock = null; });
+    } catch {
+      // Wake Lock API not supported or denied — fine to ignore.
+    }
+  }
+
+  private releaseWakeLock(): void {
+    this.wakeLock?.release();
+    this.wakeLock = null;
+  }
+
+  constructor() {
+    // Keep the screen awake whenever audio is playing (local or Cast).
+    effect(() => {
+      if (this.isPlaying()) {
+        this.acquireWakeLock();
+      } else {
+        this.releaseWakeLock();
+      }
+    });
+  }
+
   // ── Public methods ───────────────────────────────────────────────────────────
 
   play(): void {
@@ -286,6 +315,7 @@ export class AudioPlayer implements OnInit, OnDestroy {
    *  that only happens from the user-facing stop() method, so auto-join sessions
    *  survive the initial null emission from currentTrack$. */
   private stopInternal(): void {
+    if (!this.audioElRef?.nativeElement) return;
     this.audioEl.pause();
     this.speechPlayback.stop();
     this.audioEl.currentTime = 0;

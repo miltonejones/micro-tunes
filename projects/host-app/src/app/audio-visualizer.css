@@ -15,7 +15,20 @@
 .audio-visualizer canvas {
   display: block;
   width: 100%;
-  height: 100px;
+  height: 80px;
+}
+
+.audio-visualizer__watermark {
+  position: absolute;
+  bottom: 4px;
+  right: 8px;
+  font-size: 0.6rem;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  opacity: 0.4;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  pointer-events: none;
 }
 
 @media (max-width: 576px) {

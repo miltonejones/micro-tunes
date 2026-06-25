@@ -115,6 +115,7 @@
     }
   </div>
 
+  @if (totalPages() > 1) {
   <div class="pager">
     @if (pageNum() > 1) {
       <a [routerLink]="prevLink()"><i class="fa-solid fa-chevron-left"></i> Prev</a>
@@ -130,6 +131,7 @@
       <span class="pager-disabled">Next <i class="fa-solid fa-chevron-right"></i></span>
     }
   </div>
+  }
 }
 
 @if (menuTrack()) {
