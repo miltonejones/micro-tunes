@@ -54,7 +54,6 @@ export class AudioPlayer implements OnInit, OnDestroy {
   duration = signal(0);
   isExpanded = signal(false);
   protected isCasting = signal(false);
-  protected castVolume = signal(1);
 
   private playRequestId = 0;
   private corsRetryAttempted = false;
