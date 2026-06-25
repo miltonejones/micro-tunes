@@ -34,7 +34,7 @@
   justify-content: flex-end;
   padding: 1.5rem;
   background: linear-gradient(to top, rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 0.1) 55%, transparent 80%);
-  color: #fff;
+  color: #fff !important;
   mix-blend-mode: difference;
 }
 
