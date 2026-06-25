@@ -11,6 +11,7 @@ import {
 } from '@angular/core';
 import { AudioPlayerCommandService } from 'shared-utils';
 import { AudioAnalyserService } from './audio-analyser.service';
+import { AudioVisualizerPanelService } from './audio-visualizer-panel.service';
 
 const BAR_GRADIENT_START = '#4f46e5';
 const BAR_GRADIENT_END = '#ec4899';
@@ -27,12 +28,15 @@ export class AudioVisualizer implements OnInit, AfterViewInit, OnDestroy {
 
   private audioAnalyserService = inject(AudioAnalyserService);
   private audioPlayerCommand = inject(AudioPlayerCommandService);
+  private visualizerPanel = inject(AudioVisualizerPanelService);
   private animationFrameId?: number;
   private dataArray?: Uint8Array<ArrayBuffer>;
 
   hasTrack = signal(false);
 
-  isVisible = computed(() => this.hasTrack() && this.audioAnalyserService.available());
+  isVisible = computed(
+    () => this.hasTrack() && this.audioAnalyserService.available() && this.visualizerPanel.isOpen(),
+  );
 
   ngOnInit(): void {
     this.audioPlayerCommand.currentTrack$.subscribe((track) => {

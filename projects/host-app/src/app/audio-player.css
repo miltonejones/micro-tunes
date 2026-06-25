@@ -85,7 +85,8 @@
 }
 
 .audio-player-controls button,
-.audio-player-queue-btn {
+.audio-player-queue-btn,
+.audio-player-visualizer-btn {
   border: none;
   background: none;
   font-size: 1rem;
@@ -101,9 +102,14 @@
 }
 
 .audio-player-controls button:hover,
-.audio-player-queue-btn:hover {
+.audio-player-queue-btn:hover,
+.audio-player-visualizer-btn:hover {
   background-color: var(--surface-hover);
   color: var(--text);
+}
+
+.audio-player-visualizer-btn-active {
+  color: var(--accent);
 }
 
 .audio-player-play-btn {
