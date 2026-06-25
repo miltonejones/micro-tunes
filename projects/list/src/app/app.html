@@ -58,6 +58,11 @@
       <span></span>
     </div> -->
     @for (track of tracks(); track track.ID) {
+      @if (hasMultipleDiscs() && track.discNumber && ($index === 0 || track.discNumber !== tracks()[$index - 1].discNumber)) {
+        <div class="disc-header">
+          <i class="fa-solid fa-compact-disc"></i> Disc {{ track.discNumber }}
+        </div>
+      }
       <div
         class="track-row"
         [class.active]="track.ID === currentTrackId()"

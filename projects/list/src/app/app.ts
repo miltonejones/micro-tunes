@@ -67,7 +67,34 @@ export class App implements OnInit {
   menuView = signal<MenuView>('main');
 
   entity = computed(() => this.detail()?.row[0] ?? null);
-  tracks = computed(() => this.detail()?.related.records ?? []);
+  hasMultipleDiscs = computed(() => {
+    if (this.listType() !== 'album') return false;
+    const discs = new Set(this.tracks().map((t) => t.discNumber));
+    discs.delete(null as any);
+    discs.delete(undefined as any);
+    return discs.size > 1;
+  });
+  tracks = computed(() => {
+    const records = this.detail()?.related.records ?? [];
+    if (this.listType() !== 'album') return records;
+    const sorted = [...records].sort((a, b) => {
+      const discA = a.discNumber ?? 0;
+      const discB = b.discNumber ?? 0;
+      if (discA !== discB) return discA - discB;
+      const trackA = a.trackNumber ?? 0;
+      const trackB = b.trackNumber ?? 0;
+      if (trackA !== trackB) return trackA - trackB;
+      return (a.ID ?? 0) - (b.ID ?? 0);
+    });
+    // Deduplicate by disc+track combination (keep first occurrence)
+    const seen = new Set<string>();
+    return sorted.filter((t) => {
+      const key = `${t.discNumber ?? 0}|${t.trackNumber ?? 0}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  });
   totalPages = computed(() =>
     Math.max(1, Math.ceil((this.detail()?.related.count ?? 0) / PAGE_SIZE)),
   );
