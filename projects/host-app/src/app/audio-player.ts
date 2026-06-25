@@ -20,6 +20,7 @@ import {
 } from 'shared-utils';
 import { AnnouncerSettingsService } from './announcer-settings.service';
 import { AudioAnalyserService } from './audio-analyser.service';
+import { AudioVisualizerPanelService } from './audio-visualizer-panel.service';
 import { TrackQueuePanelService } from './track-queue-panel.service';
 
 const ANNOUNCING_VOLUME = 0.3;
@@ -39,6 +40,7 @@ export class AudioPlayer implements OnInit, OnDestroy {
   private speechPlayback = inject(SpeechPlaybackService);
   private audioAnalyser = inject(AudioAnalyserService);
   protected queuePanel = inject(TrackQueuePanelService);
+  protected visualizerPanel = inject(AudioVisualizerPanelService);
   private subscription?: Subscription;
 
   track = signal<ITrackItem | null>(null);
