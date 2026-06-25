@@ -167,34 +167,47 @@ export class AudioPlayer implements OnInit, OnDestroy {
 
     if (this.isCasting()) {
       this.castService.loadTrack(track);
-    } else {
-      this.corsRetryAttempted = false;
-      this.audioAnalyser.setAvailable(true);
-      this.audioAnalyser.initialize(this.audioEl);
-      this.audioEl.crossOrigin = 'anonymous';
-      this.audioEl.src = buildPlayerUrl(track.FileKey);
+
+      // Announcement — TTS plays locally while volume ducks on Cast.
+      const settings = this.announcerSettings.settings();
+      if (settings.enabled) {
+        this.announcing.set(true);
+        await this.announcementCommand.announceTrackChange(
+          track.artistName, track.Title, track.trackTime,
+          settings.name, settings.zip, settings.chatType,
+          () => this.setVolume(ANNOUNCING_VOLUME),
+          () => this.setVolume(1),
+          () => this.setVolume(1),
+        );
+      }
+
+      this.announcing.set(false);
+      return;
     }
 
-    // Announcement (TTS plays locally). When casting, the volume callbacks
-    // duck the Cast device volume so the announcement is heard clearly.
+    // Local playback
+    this.corsRetryAttempted = false;
+    this.audioAnalyser.setAvailable(true);
+    this.audioAnalyser.initialize(this.audioEl);
+    this.audioEl.crossOrigin = 'anonymous';
+    this.audioEl.src = buildPlayerUrl(track.FileKey);
+
     const settings = this.announcerSettings.settings();
     if (settings.enabled) {
       this.announcing.set(true);
       await this.announcementCommand.announceTrackChange(
-        track.artistName,
-        track.Title,
-        track.trackTime,
-        settings.name,
-        settings.zip,
-        settings.chatType,
+        track.artistName, track.Title, track.trackTime,
+        settings.name, settings.zip, settings.chatType,
         () => this.setVolume(ANNOUNCING_VOLUME),
         () => this.setVolume(1),
         () => this.setVolume(1),
       );
-      this.announcing.set(false);
     }
 
-    if (this.isCasting()) return;
+    if (requestId !== this.playRequestId) return;
+
+    this.announcing.set(false);
+    this.play();
   }
 
   /** Load a track on the native <audio> element, optionally seeking to a position. */
