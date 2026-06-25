@@ -311,6 +311,7 @@ export class CastService {
 
   private onSessionChanged(event: any): void {
     const sessionState: string = event.sessionState;
+    const session: cast.framework.CastSession | undefined = event.session;
 
     const connected =
       sessionState === cast.framework.SessionState.SESSION_STARTED ||
@@ -319,7 +320,12 @@ export class CastService {
     this.isConnected$.next(connected);
 
     if (connected) {
-      this.pollDeviceName(5);
+      this.deviceName$.next(
+        (session as any)?.receiver?.friendlyName ??
+        (session as any)?.receiver?.displayName ??
+        (session as any)?.friendlyName ??
+        '',
+      );
     } else {
       this.deviceName$.next('');
       this.isPlaying$.next(false);
@@ -329,24 +335,6 @@ export class CastService {
       this.stopTimePoll();
     }
   }
-
-  /** Poll for the Cast device name every 500 ms for up to 5 seconds after connecting. */
-  private pollDeviceName(retriesLeft: number): void {
-    const session = getContext()?.getCurrentSession();
-    const receiver = (session as any)?.receiver;
-    const name = (receiver?.friendlyName ?? receiver?.displayName ?? '') as string;
-    if (name) {
-      this.deviceName$.next(name);
-      return;
-    }
-    // Debug log to help identify the correct property path
-    console.debug('[CastService] receiver object:', receiver);
-    if (retriesLeft <= 0) return;
-    setTimeout(() => this.pollDeviceName(retriesLeft - 1), 500);
-  }
-
-
-  // ── Availability ─────────────────────────────────────────────────────────────
 
   private syncAvailability(): void {
     const ctx = getContext();
