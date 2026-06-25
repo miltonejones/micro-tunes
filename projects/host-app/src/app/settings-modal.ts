@@ -1,6 +1,7 @@
 import { Component, effect, inject, signal } from '@angular/core';
 import { AnnouncerSettings, AnnouncerSettingsService } from './announcer-settings.service';
 import { SettingsPanelService } from './settings-panel.service';
+import { ThemeService, THEMES } from './theme.service';
 
 @Component({
   selector: 'app-settings-modal',
@@ -11,6 +12,8 @@ import { SettingsPanelService } from './settings-panel.service';
 export class SettingsModal {
   private announcerSettings = inject(AnnouncerSettingsService);
   protected panel = inject(SettingsPanelService);
+  protected themeService = inject(ThemeService);
+  protected readonly themes = THEMES;
 
   form = signal<AnnouncerSettings>(this.announcerSettings.settings());
 
@@ -26,6 +29,12 @@ export class SettingsModal {
     const target = event.target as HTMLInputElement;
     const value = target.type === 'checkbox' ? target.checked : target.value;
     this.form.update((current) => ({ ...current, [key]: value }) as AnnouncerSettings);
+  }
+
+  setTheme(event: Event): void {
+    const key = (event.target as HTMLSelectElement).value;
+    const theme = THEMES.find((t) => t.key === key);
+    if (theme) this.themeService.setTheme(theme);
   }
 
   save(): void {

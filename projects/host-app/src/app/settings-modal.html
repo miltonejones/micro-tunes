@@ -11,10 +11,28 @@
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title"><i class="fa-solid fa-gear"></i> Announcer Settings</h5>
+        <h5 class="modal-title"><i class="fa-solid fa-gear"></i> Settings</h5>
         <button type="button" class="btn-close" aria-label="Close" (click)="close()"></button>
       </div>
       <div class="modal-body">
+        <div class="mb-4">
+          <label for="themeSelect" class="form-label">Theme</label>
+          <select
+            class="form-select"
+            id="themeSelect"
+            [value]="themeService.currentTheme().key"
+            (change)="setTheme($event)"
+          >
+            @for (theme of themes; track theme.key) {
+              <option [value]="theme.key">{{ theme.name }} — {{ theme.description }}</option>
+            }
+          </select>
+        </div>
+
+        <hr />
+
+        <h6 class="section-label"><i class="fa-solid fa-microphone"></i> DJ Announcer</h6>
+
         <div class="mb-3 form-check form-switch">
           <input
             class="form-check-input"
