@@ -316,7 +316,6 @@ export class CastService {
 
   private onSessionChanged(event: any): void {
     const sessionState: string = event.sessionState;
-    const session: cast.framework.CastSession | undefined = event.session;
 
     const connected =
       sessionState === cast.framework.SessionState.SESSION_STARTED ||
@@ -329,20 +328,10 @@ export class CastService {
       const emitToast = this.userInitiatedConnect;
       this.userInitiatedConnect = false;
 
-      // Try the event's session first, then fall back to context lookup.
-      // The property path varies across SDK versions and device types.
-      const fromEvent = extractFriendlyName(session);
-      if (fromEvent) {
-        this.deviceName$.next(fromEvent);
-        if (emitToast) this.deviceNameResolved.next(fromEvent);
-      } else {
-        // Retry from context after a brief delay for the SDK to hydrate
-        setTimeout(() => this.zone.run(() => {
-          const name = extractFriendlyName(getContext()?.getCurrentSession()) ?? '';
-          this.deviceName$.next(name);
-          if (emitToast) this.deviceNameResolved.next(name);
-        }), 1500);
-      }
+      // Aggressively poll for the device name at short intervals.
+      // The session's receiver object is often populated asynchronously
+      // after the state-change event fires.
+      this.pollSessionName(0, emitToast);
     } else {
       this.deviceName$.next('');
       this.isPlaying$.next(false);
@@ -351,6 +340,23 @@ export class CastService {
       this.playerState$.next('');
       this.stopTimePoll();
     }
+  }
+
+  /** Every 400ms for 3 seconds, try to extract the Cast device name from the session. */
+  private pollSessionName(attempt: number, emitToast: boolean): void {
+    const name = extractFriendlyName(getContext()?.getCurrentSession());
+    if (name) {
+      this.deviceName$.next(name);
+      if (emitToast) this.deviceNameResolved.next(name);
+      return;
+    }
+    if (attempt >= 7) {
+      // 7 attempts × 400ms = 2.8 seconds – give up
+      this.deviceName$.next('');
+      if (emitToast) this.deviceNameResolved.next('');
+      return;
+    }
+    setTimeout(() => this.pollSessionName(attempt + 1, emitToast), 400);
   }
 
   private syncAvailability(): void {
