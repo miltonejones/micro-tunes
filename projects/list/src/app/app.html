@@ -8,8 +8,28 @@
   @if (bannerImage(); as bannerImage) {
     <div class="artist-banner" [style.background-image]="'url(' + bannerImage + ')'">
       <div class="artist-banner-overlay">
-        <div class="artist-banner-label">Artist</div>
-        <div class="artist-banner-title">{{ bannerName() }}</div>
+        <div class="artist-banner-info">
+          <div class="artist-banner-label">{{ bannerLabel() }}</div>
+          <div class="artist-banner-title">{{ bannerName() }}</div>
+        </div>
+        <div class="artist-banner-actions">
+          <button
+            type="button"
+            class="banner-play-btn"
+            [title]="isPlayingThisList() ? 'Stop' : 'Play all'"
+            (click)="togglePlayList()"
+          >
+            <i class="fa-solid" [class.fa-play]="!isPlayingThisList()" [class.fa-stop]="isPlayingThisList()"></i>
+          </button>
+          <button
+            type="button"
+            class="banner-shuffle-btn"
+            title="Shuffle play"
+            (click)="shuffleAndPlay()"
+          >
+            <i class="fa-solid fa-shuffle"></i>
+          </button>
+        </div>
       </div>
     </div>
   }

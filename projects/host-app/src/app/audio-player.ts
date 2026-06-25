@@ -13,6 +13,7 @@ import {
   AnnouncementCommandService,
   AudioPlayerCommandService,
   buildPlayerUrl,
+  CastService,
   formatDuration,
   ImgFallbackDirective,
   ITrackItem,
@@ -21,13 +22,14 @@ import {
 import { AnnouncerSettingsService } from './announcer-settings.service';
 import { AudioAnalyserService } from './audio-analyser.service';
 import { AudioVisualizerPanelService } from './audio-visualizer-panel.service';
+import { CastButton } from './cast-button';
 import { TrackQueuePanelService } from './track-queue-panel.service';
 
 const ANNOUNCING_VOLUME = 0.3;
 
 @Component({
   selector: 'app-audio-player',
-  imports: [ImgFallbackDirective],
+  imports: [CastButton, ImgFallbackDirective],
   templateUrl: './audio-player.html',
   styleUrl: './audio-player.css',
 })
@@ -39,9 +41,10 @@ export class AudioPlayer implements OnInit, OnDestroy {
   private announcerSettings = inject(AnnouncerSettingsService);
   private speechPlayback = inject(SpeechPlaybackService);
   private audioAnalyser = inject(AudioAnalyserService);
+  private castService = inject(CastService);
   protected queuePanel = inject(TrackQueuePanelService);
   protected visualizerPanel = inject(AudioVisualizerPanelService);
-  private subscription?: Subscription;
+  private subscriptions: Subscription[] = [];
 
   track = signal<ITrackItem | null>(null);
   isPlaying = signal(false);
@@ -49,26 +52,123 @@ export class AudioPlayer implements OnInit, OnDestroy {
   currentTime = signal(0);
   duration = signal(0);
   isExpanded = signal(false);
+  protected isCasting = signal(false);
 
   private playRequestId = 0;
   private corsRetryAttempted = false;
+  private castTransitioning = false;
 
   progress = computed(() => (this.duration() ? (this.currentTime() / this.duration()) * 100 : 0));
   currentTimeLabel = computed(() => formatDuration(this.currentTime()));
   durationLabel = computed(() => formatDuration(this.duration()));
 
+  // ── Lifecycle ────────────────────────────────────────────────────────────────
+
   ngOnInit(): void {
-    this.subscription = this.audioPlayerCommand.currentTrack$.subscribe((track) => {
-      this.track.set(track);
-      if (track) {
-        this.loadAndPlay(track);
-      }
-    });
+    // Listen for track changes from the queue / global command service.
+    this.subscriptions.push(
+      this.audioPlayerCommand.currentTrack$.subscribe((track) => {
+        this.track.set(track);
+        if (track) {
+          this.loadAndPlay(track);
+        } else {
+          this.stopInternal();
+        }
+      }),
+    );
+
+    // Watch Cast connection state — hand off / reclaim playback.
+    this.subscriptions.push(
+      this.castService.isConnected$.subscribe((connected) => {
+        const previouslyCasting = this.isCasting();
+        this.isCasting.set(connected);
+
+        if (connected && !previouslyCasting) {
+          // User just connected to a Cast device while playing locally.
+          this.onCastConnected();
+        } else if (!connected && previouslyCasting) {
+          // User just disconnected / session ended while Cast was playing.
+          this.onCastDisconnected();
+        }
+      }),
+    );
+
+    // During Cast, drive UI from CastService observables instead of <audio> events.
+    this.subscriptions.push(
+      this.castService.isPlaying$.subscribe((v) => {
+        if (this.isCasting()) this.isPlaying.set(v);
+      }),
+      this.castService.currentTime$.subscribe((v) => {
+        if (this.isCasting()) this.currentTime.set(v);
+      }),
+      this.castService.duration$.subscribe((v) => {
+        if (this.isCasting()) this.duration.set(v);
+      }),
+    );
+
+    // Auto-advance when a track finishes on the Cast device.
+    // The IDLE state fires both when a track ends naturally AND transiently
+    // while a new track is being loaded. We use a guard to suppress the
+    // transient IDLE that occurs between loadTrack() and the first PLAYING
+    // state of the new track.
+    this.subscriptions.push(
+      this.castService.playerState$.subscribe((state) => {
+        if (this.isCasting() && state === 'IDLE' && this.castService.isConnected$.value) {
+          if (!this.castTransitioning) {
+            this.castTransitioning = true;
+            this.advanceTrack(1);
+          }
+        } else if (state === 'PLAYING' || state === 'BUFFERING') {
+          this.castTransitioning = false;
+        }
+      }),
+    );
   }
 
   ngOnDestroy(): void {
-    this.subscription?.unsubscribe();
+    for (const s of this.subscriptions) s.unsubscribe();
   }
+
+  // ── Cast transition helpers ──────────────────────────────────────────────────
+
+  /**
+   * The user connected to a Cast device while something was playing locally.
+   * Pause the native element, hand the current track + position to the Cast
+   * device, then let CastService drive the UI.
+   */
+  private onCastConnected(): void {
+    const currentTrack = this.track();
+    const position = this.audioEl.currentTime;
+
+    // Pause native playback
+    this.audioEl.pause();
+    this.speechPlayback.pause();
+
+    if (currentTrack) {
+      this.castService.loadTrack(currentTrack);
+      if (position > 0) {
+        // Small delay to let the Cast device start loading, then seek
+        setTimeout(() => this.castService.seekTo(position), 500);
+      }
+      this.castService.play();
+    }
+  }
+
+  /**
+   * The Cast session ended while playing. Read the Cast position, load
+   * the same track on the native <audio> element, seek to the position,
+   * and resume local playback.
+   */
+  private onCastDisconnected(): void {
+    const currentTrack = this.track();
+    const castPosition = this.castService.currentTime$.value;
+
+    if (currentTrack && castPosition > 0) {
+      this.loadAudioElement(currentTrack, castPosition);
+    }
+  }
+
+  // ─── Core playback ───────────────────────────────────────────────────────────
 
   private get audioEl(): HTMLAudioElement {
     return this.audioElRef.nativeElement;
@@ -76,6 +176,32 @@ export class AudioPlayer implements OnInit, OnDestroy {
 
   private async loadAndPlay(track: ITrackItem): Promise<void> {
     const requestId = ++this.playRequestId;
+
+    if (this.isCasting()) {
+      // Suppress the auto-advance guard: the Cast device may briefly go IDLE
+      // while transitioning to the new track, and we don't want that to
+      // trigger skip-to-next.
+      this.castTransitioning = true;
+      this.castService.loadTrack(track);
+
+      // Announcement — TTS plays locally while volume ducks on Cast.
+      const settings = this.announcerSettings.settings();
+      if (settings.enabled) {
+        this.announcing.set(true);
+        await this.announcementCommand.announceTrackChange(
+          track.artistName, track.Title, track.trackTime,
+          settings.name, settings.zip, settings.chatType,
+          () => this.setVolume(ANNOUNCING_VOLUME),
+          () => this.setVolume(1),
+          () => this.setVolume(1),
+        );
+      }
+
+      this.announcing.set(false);
+      return;
+    }
+
+    // Local playback
     this.corsRetryAttempted = false;
     this.audioAnalyser.setAvailable(true);
     this.audioAnalyser.initialize(this.audioEl);
@@ -86,29 +212,47 @@ export class AudioPlayer implements OnInit, OnDestroy {
     if (settings.enabled) {
       this.announcing.set(true);
       await this.announcementCommand.announceTrackChange(
-        track.artistName,
-        track.Title,
-        track.trackTime,
-        settings.name,
-        settings.zip,
-        settings.chatType,
+        track.artistName, track.Title, track.trackTime,
+        settings.name, settings.zip, settings.chatType,
         () => this.setVolume(ANNOUNCING_VOLUME),
         () => this.setVolume(1),
         () => this.setVolume(1),
       );
     }
 
-    if (requestId !== this.playRequestId) {
-      return;
-    }
+    if (requestId !== this.playRequestId) return;
 
     this.announcing.set(false);
     this.play();
   }
 
-  // Public methods for external control, mirroring a standard audio player API.
+  /** Load a track on the native <audio> element, optionally seeking to a position. */
+  private loadAudioElement(track: ITrackItem, seekToPosition = 0): void {
+    this.corsRetryAttempted = false;
+    this.audioAnalyser.setAvailable(true);
+    this.audioAnalyser.initialize(this.audioEl);
+    this.audioEl.crossOrigin = 'anonymous';
+    this.audioEl.src = buildPlayerUrl(track.FileKey);
+
+    if (seekToPosition > 0) {
+      const onLoaded = () => {
+        this.audioEl.currentTime = Math.min(seekToPosition, this.audioEl.duration || seekToPosition);
+        this.audioEl.removeEventListener('loadedmetadata', onLoaded);
+      };
+      this.audioEl.addEventListener('loadedmetadata', onLoaded);
+    }
+
+    this.play();
+  }
+
+  // ── Public methods ───────────────────────────────────────────────────────────
 
   play(): void {
+    if (this.isCasting()) {
+      this.castService.play();
+      return;
+    }
+
     const context = this.audioAnalyser.audioContext();
     if (context?.state === 'suspended') {
       context.resume();
@@ -118,6 +262,10 @@ export class AudioPlayer implements OnInit, OnDestroy {
   }
 
   pause(): void {
+    if (this.isCasting()) {
+      this.castService.pause();
+      return;
+    }
     this.audioEl.pause();
     this.speechPlayback.pause();
   }
@@ -127,14 +275,28 @@ export class AudioPlayer implements OnInit, OnDestroy {
   }
 
   stop(): void {
+    if (this.isCasting()) {
+      this.castService.disconnect();
+    }
+    this.stopInternal();
+    this.audioPlayerCommand.clearQueue();
+  }
+
+  /** Stops current playback without touching the queue. Does NOT disconnect Cast —
+   *  that only happens from the user-facing stop() method, so auto-join sessions
+   *  survive the initial null emission from currentTrack$. */
+  private stopInternal(): void {
     this.audioEl.pause();
     this.speechPlayback.stop();
     this.audioEl.currentTime = 0;
-    this.audioPlayerCommand.clearQueue();
     this.isExpanded.set(false);
   }
 
   seekTo(time: number): void {
+    if (this.isCasting()) {
+      this.castService.seekTo(time);
+      return;
+    }
     if (isFinite(this.audioEl.duration)) {
       this.audioEl.currentTime = Math.max(0, Math.min(time, this.audioEl.duration));
     }
@@ -150,52 +312,40 @@ export class AudioPlayer implements OnInit, OnDestroy {
     }
   }
 
-  getCurrentTime(): number {
-    return this.audioEl.currentTime;
-  }
-
-  getDuration(): number {
-    return this.audioEl.duration;
-  }
-
-  getIsPlaying(): boolean {
-    return this.isPlaying();
-  }
+  // ── Template-bound <audio> event handlers ────────────────────────────────────
 
   onSeekInput(event: Event): void {
     const percent = Number((event.target as HTMLInputElement).value);
-    this.seekTo((percent / 100) * this.audioEl.duration);
+    const dur = this.isCasting() ? this.duration() : this.audioEl.duration;
+    this.seekTo((percent / 100) * dur);
   }
 
   onPlay(): void {
-    this.isPlaying.set(true);
+    if (!this.isCasting()) this.isPlaying.set(true);
   }
 
   onPause(): void {
-    this.isPlaying.set(false);
+    if (!this.isCasting()) this.isPlaying.set(false);
   }
 
   onEnded(): void {
-    this.advanceTrack(1);
+    if (!this.isCasting()) this.advanceTrack(1);
   }
 
   onTimeUpdate(): void {
-    this.currentTime.set(this.audioEl.currentTime);
+    if (!this.isCasting()) this.currentTime.set(this.audioEl.currentTime);
   }
 
   onLoadedMetadata(): void {
-    this.duration.set(this.audioEl.duration);
+    if (!this.isCasting()) this.duration.set(this.audioEl.duration);
   }
 
-  /**
-   * Fires when the audio element fails to load/play its current source. The most common
-   * cause is requesting with crossOrigin set against a track whose host doesn't actually
-   * support CORS for that resource — the browser rejects the response outright rather than
-   * just failing to read it. Fall back to a plain (non-CORS) load so playback still works,
-   * accepting that the analyser won't get readable data for this track.
-   */
+  /** Fires when the audio element fails to load/play its current source. The most
+   * common cause is requesting with crossOrigin set against a track whose host
+   * doesn't actually support CORS — fall back to a non-CORS load so playback still
+   * works, at the cost of the analyser not getting readable data. */
   onAudioError(): void {
-    if (this.corsRetryAttempted || this.audioEl.crossOrigin === null) {
+    if (this.isCasting() || this.corsRetryAttempted || this.audioEl.crossOrigin === null) {
       return;
     }
 

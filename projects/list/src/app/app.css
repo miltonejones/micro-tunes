@@ -12,11 +12,16 @@
   position: absolute;
   inset: 0;
   display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
+  align-items: flex-end;
+  justify-content: space-between;
   padding: 1rem 1.5rem;
   background: linear-gradient(to top, rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 0.1) 55%, transparent 80%);
   color: #fff;
+}
+
+.artist-banner-info {
+  display: flex;
+  flex-direction: column;
 }
 
 .artist-banner-label {
@@ -31,6 +36,55 @@
   font-size: 2.1rem;
   font-weight: 800;
   letter-spacing: -0.01em;
+}
+
+.artist-banner-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.banner-play-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  border: none;
+  border-radius: 50%;
+  background: var(--accent-gradient, linear-gradient(135deg, #4f46e5, #ec4899));
+  color: #fff;
+  font-size: 1.15rem;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.banner-play-btn:hover {
+  transform: scale(1.08);
+  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.55);
+}
+
+.banner-shuffle-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.35);
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.banner-shuffle-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.6);
 }
 
 .track-list {
@@ -187,6 +241,22 @@ a.track-genre:hover {
 
   .artist-banner-title {
     font-size: 1.5rem;
+  }
+
+  .artist-banner-actions {
+    gap: 0.35rem;
+  }
+
+  .banner-play-btn {
+    width: 2.5rem;
+    height: 2.5rem;
+    font-size: 1rem;
+  }
+
+  .banner-shuffle-btn {
+    width: 2rem;
+    height: 2rem;
+    font-size: 0.75rem;
   }
 
   .track-row {

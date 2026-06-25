@@ -14,15 +14,19 @@
         </div>
       </button>
 
-      <button
-        type="button"
-        class="audio-player-visualizer-btn"
-        [class.audio-player-visualizer-btn-active]="visualizerPanel.isOpen()"
-        [title]="visualizerPanel.isOpen() ? 'Hide visualizer' : 'Show visualizer'"
-        (click)="visualizerPanel.toggle()"
-      >
-        <i class="fa-solid fa-wave-square"></i>
-      </button>
+      <app-cast-button />
+
+      @if (!isCasting()) {
+        <button
+          type="button"
+          class="audio-player-visualizer-btn"
+          [class.audio-player-visualizer-btn-active]="visualizerPanel.isOpen()"
+          [title]="visualizerPanel.isOpen() ? 'Hide visualizer' : 'Show visualizer'"
+          (click)="visualizerPanel.toggle()"
+        >
+          <i class="fa-solid fa-wave-square"></i>
+        </button>
+      }
 
       <button type="button" class="audio-player-queue-btn" (click)="queuePanel.toggle()">
         <i class="fa-solid fa-list"></i>

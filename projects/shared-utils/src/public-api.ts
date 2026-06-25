@@ -21,6 +21,7 @@ export { CatalogQueryService } from './lib/catalog-query.service';
 export { CatalogCommandService } from './lib/catalog-command.service';
 export { WikipediaQueryService } from './lib/wikipedia-query.service';
 
+export { CastService } from './lib/cast.service';
 export { ServiceWorkerUpdateService } from './lib/service-worker-update.service';
 export { faveIcon } from './lib/favorite-icon';
 export { ImgFallbackDirective } from './lib/img-fallback.directive';

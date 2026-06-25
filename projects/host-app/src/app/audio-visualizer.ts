@@ -9,7 +9,8 @@ import {
   inject,
   signal,
 } from '@angular/core';
-import { AudioPlayerCommandService } from 'shared-utils';
+import { Subscription } from 'rxjs';
+import { AudioPlayerCommandService, CastService } from 'shared-utils';
 import { AudioAnalyserService } from './audio-analyser.service';
 import { AudioVisualizerPanelService } from './audio-visualizer-panel.service';
 
@@ -29,19 +30,31 @@ export class AudioVisualizer implements OnInit, AfterViewInit, OnDestroy {
   private audioAnalyserService = inject(AudioAnalyserService);
   private audioPlayerCommand = inject(AudioPlayerCommandService);
   private visualizerPanel = inject(AudioVisualizerPanelService);
+  private castService: CastService = inject(CastService);
   private animationFrameId?: number;
   private dataArray?: Uint8Array<ArrayBuffer>;
+  private subs: Subscription[] = [];
 
   hasTrack = signal(false);
+
+  /** Whether a Cast session is active — synced from CastService for reactive templates. */
+  protected isCasting = signal(false);
 
   isVisible = computed(
     () => this.hasTrack() && this.audioAnalyserService.available() && this.visualizerPanel.isOpen(),
   );
 
+  showPanel = computed(
+    () => this.hasTrack() && !this.isCasting() && this.visualizerPanel.isOpen(),
+  );
+
   ngOnInit(): void {
-    this.audioPlayerCommand.currentTrack$.subscribe((track) => {
-      this.hasTrack.set(!!track);
-    });
+    this.subs.push(
+      this.audioPlayerCommand.currentTrack$.subscribe((track) => {
+        this.hasTrack.set(!!track);
+      }),
+      this.castService.isConnected$.subscribe((v) => this.isCasting.set(v)),
+    );
   }
 
   ngAfterViewInit(): void {
@@ -56,6 +69,7 @@ export class AudioVisualizer implements OnInit, AfterViewInit, OnDestroy {
     if (this.animationFrameId !== undefined) {
       cancelAnimationFrame(this.animationFrameId);
     }
+    for (const s of this.subs) s.unsubscribe();
   }
 
   private drawFrame(): void {
