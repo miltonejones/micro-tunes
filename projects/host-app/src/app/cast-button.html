@@ -9,7 +9,7 @@
     <i
       class="fa-solid"
       [class.fa-circle-nodes]="isConnected()"
-      [class.fa-cast]="!isConnected()"
+      [class.fa-broadcast-tower]="!isConnected()"
     ></i>
     @if (isConnected()) {
       <span class="cast-button__name">{{ deviceName() }}</span>
