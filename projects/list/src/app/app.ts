@@ -51,6 +51,15 @@ export class App implements OnInit {
   currentTrackId = signal<number | null>(null);
   bannerImage = signal<string | null>(null);
   bannerName = signal<string | null>(null);
+  bannerLabel = computed(() => {
+    switch (this.listType()) {
+      case 'artist': return 'Artist';
+      case 'album': return 'Album';
+      case 'genre': return 'Genre';
+      case 'playlist': return 'Playlist';
+      default: return '';
+    }
+  });
   playlists = signal<IPlaylistSummary[]>([]);
   queueLength = signal(0);
 
@@ -62,6 +71,11 @@ export class App implements OnInit {
   totalPages = computed(() =>
     Math.max(1, Math.ceil((this.detail()?.related.count ?? 0) / PAGE_SIZE)),
   );
+
+  isPlayingThisList = computed(() => {
+    const id = this.currentTrackId();
+    return !!id && this.tracks().some((t) => t.ID === id);
+  });
 
   prevLink = computed(() => this.buildPageLink(this.pageNum() - 1));
   nextLink = computed(() => this.buildPageLink(this.pageNum() + 1));
@@ -139,6 +153,28 @@ export class App implements OnInit {
 
   playTrack(track: ITrackItem): void {
     this.audioPlayerCommand.openTrack(track, this.tracks());
+  }
+
+  togglePlayList(): void {
+    if (this.isPlayingThisList()) {
+      this.audioPlayerCommand.clearQueue();
+    } else {
+      const tracks = this.tracks();
+      if (tracks.length > 0) {
+        this.audioPlayerCommand.openTrack(tracks[0], tracks);
+      }
+    }
+  }
+
+  shuffleAndPlay(): void {
+    const tracks = [...this.tracks()];
+    for (let i = tracks.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [tracks[i], tracks[j]] = [tracks[j], tracks[i]];
+    }
+    if (tracks.length > 0) {
+      this.audioPlayerCommand.openTrack(tracks[0], tracks);
+    }
   }
 
   isInPlaylist(track: ITrackItem): boolean {
