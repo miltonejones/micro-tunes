@@ -40,9 +40,6 @@ export class AudioVisualizer implements OnInit, AfterViewInit, OnDestroy {
   /** Whether a Cast session is active — synced from CastService for reactive templates. */
   protected isCasting = signal(false);
 
-  /** Current Cast device name — synced from CastService. */
-  protected castDeviceName = signal('');
-
   isVisible = computed(
     () => this.hasTrack() && this.audioAnalyserService.available() && this.visualizerPanel.isOpen(),
   );
@@ -59,7 +56,6 @@ export class AudioVisualizer implements OnInit, AfterViewInit, OnDestroy {
         this.hasTrack.set(!!track);
       }),
       this.castService.isConnected$.subscribe((v) => this.isCasting.set(v)),
-      this.castService.deviceName$.subscribe((v) => this.castDeviceName.set(v)),
     );
   }
 

@@ -3,7 +3,7 @@
     @if (isCasting()) {
       <div class="audio-visualizer__cast-overlay">
         <i class="fa-solid fa-broadcast-tower"></i>
-        <span>{{ castDeviceName() ? 'Casting to ' + castDeviceName() : 'Casting' }}</span>
+        <span>Casting</span>
       </div>
     } @else {
       <canvas #canvasEl width="360" height="120"></canvas>

@@ -1,13 +1,10 @@
-import { Component, ElementRef, OnDestroy, inject, signal, ViewChild } from '@angular/core';
+import { Component, ElementRef, inject, signal, ViewChild } from '@angular/core';
 import { NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router';
-import { Subscription, filter } from 'rxjs';
-import { CastService } from 'shared-utils';
+import { filter } from 'rxjs';
 import { AudioPlayer } from './audio-player';
 import { AudioVisualizer } from './audio-visualizer';
 import { SettingsModal } from './settings-modal';
 import { SettingsPanelService } from './settings-panel.service';
-import { ToastService } from './toast.service';
-import { ToastContainer } from './toast-container';
 import { TrackQueue } from './track-queue';
 
 type NavSection = 'home' | 'artist' | 'album' | 'genre' | 'playlist' | 'library' | null;
@@ -37,21 +34,17 @@ function resolveNavSection(url: string): NavSection {
 
 @Component({
   selector: 'app-root',
-  imports: [RouterLink, RouterOutlet, AudioPlayer, AudioVisualizer, ToastContainer, TrackQueue, SettingsModal],
+  imports: [RouterLink, RouterOutlet, AudioPlayer, AudioVisualizer, TrackQueue, SettingsModal],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
-export class App implements OnDestroy {
+export class App {
   protected readonly title = signal('host-app');
 
   private router = inject(Router);
-  private castService = inject(CastService);
-  private toast = inject(ToastService);
   protected settingsPanel = inject(SettingsPanelService);
   activeSection = signal<NavSection>(resolveNavSection(this.router.url));
   searchOpen = signal(false);
-
-  private subs: Subscription[] = [];
 
   @ViewChild('searchInput') private searchInputRef?: ElementRef<HTMLInputElement>;
 
@@ -60,20 +53,6 @@ export class App implements OnDestroy {
       this.activeSection.set(resolveNavSection((event as NavigationEnd).urlAfterRedirects));
       this.searchOpen.set(false);
     });
-
-    this.subs.push(
-      this.castService.deviceNameResolved.subscribe((name) => {
-        if (name) {
-          this.toast.show('Now casting to ' + name, 'success');
-        } else {
-          this.toast.show('Failed to get device name', 'error');
-        }
-      }),
-    );
-  }
-
-  ngOnDestroy(): void {
-    for (const s of this.subs) s.unsubscribe();
   }
 
   openSearch(): void {
