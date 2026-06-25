@@ -40,7 +40,10 @@ export class App implements OnInit, OnDestroy {
   topAlbums = computed(() => this.topByTrackCount('album'));
 
   carouselItems = computed(() =>
-    this.dashItems().filter((item) => item.imageLg && item.imageLg !== 'no image'),
+    pickRandom(
+      this.dashItems().filter((item) => item.Type === 'artist' && item.imageLg && item.imageLg !== 'no image'),
+      20,
+    ),
   );
 
   ngOnInit(): void {

@@ -93,6 +93,25 @@
   margin-top: 1rem;
 }
 
+.disc-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem 0.5rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border-strong);
+  margin-top: 0.5rem;
+}
+
+.disc-header i {
+  font-size: 0.9rem;
+  color: var(--text-tertiary);
+}
+
 .track-row {
   display: grid;
   grid-template-columns: 32px 2rem 1.5fr 1fr 1fr 0.8fr 3.5rem 2rem 1.5rem;
