@@ -9,7 +9,7 @@ import {
   inject,
   signal,
 } from '@angular/core';
-import { AudioPlayerCommandService } from 'shared-utils';
+import { AudioPlayerCommandService, CastService } from 'shared-utils';
 import { AudioAnalyserService } from './audio-analyser.service';
 import { AudioVisualizerPanelService } from './audio-visualizer-panel.service';
 
@@ -29,6 +29,7 @@ export class AudioVisualizer implements OnInit, AfterViewInit, OnDestroy {
   private audioAnalyserService = inject(AudioAnalyserService);
   private audioPlayerCommand = inject(AudioPlayerCommandService);
   private visualizerPanel = inject(AudioVisualizerPanelService);
+  protected castService: CastService = inject(CastService);
   private animationFrameId?: number;
   private dataArray?: Uint8Array<ArrayBuffer>;
 
@@ -36,6 +37,12 @@ export class AudioVisualizer implements OnInit, AfterViewInit, OnDestroy {
 
   isVisible = computed(
     () => this.hasTrack() && this.audioAnalyserService.available() && this.visualizerPanel.isOpen(),
+  );
+
+  showPanel = computed(
+    () =>
+      this.isVisible() ||
+      (this.hasTrack() && this.castService.isConnected() && this.visualizerPanel.isOpen()),
   );
 
   ngOnInit(): void {

@@ -18,6 +18,21 @@
   height: 100px;
 }
 
+.audio-visualizer__cast-overlay {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  height: 100px;
+  color: var(--accent-from, #6366f1);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.audio-visualizer__cast-overlay i {
+  font-size: 1.25rem;
+}
+
 @media (max-width: 576px) {
   .audio-visualizer {
     bottom: 120px;
