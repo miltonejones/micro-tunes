@@ -72,8 +72,10 @@ export class AudioPlayer implements OnInit, OnDestroy {
         this.track.set(track);
         if (track) {
           this.loadAndPlay(track);
+          this.updateMediaSession(track);
         } else {
           this.stopInternal();
+          this.clearMediaSession();
         }
       }),
     );
@@ -263,6 +265,37 @@ export class AudioPlayer implements OnInit, OnDestroy {
     this.wakeLock = null;
   }
 
+  // ── Media Session (lock screen / control center integration) ──────────────
+
+  private updateMediaSession(track: ITrackItem): void {
+    if (!('mediaSession' in navigator)) return;
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: track.Title,
+      artist: track.artistName,
+      album: track.albumName ?? undefined,
+      artwork: track.albumImage
+        ? [{ src: track.albumImage, sizes: '512x512', type: 'image/jpeg' }]
+        : undefined,
+    });
+  }
+
+  private clearMediaSession(): void {
+    if (!('mediaSession' in navigator)) return;
+    navigator.mediaSession.metadata = null;
+  }
+
+  /** Sync playback position to the OS media controls. */
+  private syncMediaSessionPosition(): void {
+    if (!('mediaSession' in navigator)) return;
+    const dur = this.duration();
+    if (dur <= 0) return;
+    navigator.mediaSession.setPositionState({
+      duration: dur,
+      playbackRate: 1,
+      position: this.currentTime(),
+    });
+  }
+
   constructor() {
     // Keep the screen awake whenever audio is playing (local or Cast).
     effect(() => {
@@ -272,6 +305,26 @@ export class AudioPlayer implements OnInit, OnDestroy {
         this.releaseWakeLock();
       }
     });
+
+    // Sync media session position state to lock screen / control center.
+    effect(() => {
+      if (this.isPlaying()) {
+        this.currentTime();
+        this.duration();
+        this.syncMediaSessionPosition();
+      }
+    });
+
+    // Wire media session action handlers (safe to do even if unsupported).
+    if ('mediaSession' in navigator) {
+      navigator.mediaSession.setActionHandler('play', () => this.play());
+      navigator.mediaSession.setActionHandler('pause', () => this.pause());
+      navigator.mediaSession.setActionHandler('previoustrack', () => this.advanceTrack(-1));
+      navigator.mediaSession.setActionHandler('nexttrack', () => this.advanceTrack(1));
+      navigator.mediaSession.setActionHandler('seekto', (details) => {
+        if (details.seekTime != null) this.seekTo(details.seekTime);
+      });
+    }
   }
 
   // ── Public methods ───────────────────────────────────────────────────────────
