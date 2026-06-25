@@ -56,6 +56,7 @@ export class AudioPlayer implements OnInit, OnDestroy {
 
   private playRequestId = 0;
   private corsRetryAttempted = false;
+  private castTransitioning = false;
 
   progress = computed(() => (this.duration() ? (this.currentTime() / this.duration()) * 100 : 0));
   currentTimeLabel = computed(() => formatDuration(this.currentTime()));
@@ -104,10 +105,19 @@ export class AudioPlayer implements OnInit, OnDestroy {
     );
 
     // Auto-advance when a track finishes on the Cast device.
+    // The IDLE state fires both when a track ends naturally AND transiently
+    // while a new track is being loaded. We use a guard to suppress the
+    // transient IDLE that occurs between loadTrack() and the first PLAYING
+    // state of the new track.
     this.subscriptions.push(
       this.castService.playerState$.subscribe((state) => {
         if (this.isCasting() && state === 'IDLE' && this.castService.isConnected$.value) {
-          this.advanceTrack(1);
+          if (!this.castTransitioning) {
+            this.castTransitioning = true;
+            this.advanceTrack(1);
+          }
+        } else if (state === 'PLAYING' || state === 'BUFFERING') {
+          this.castTransitioning = false;
         }
       }),
     );
@@ -166,6 +176,10 @@ export class AudioPlayer implements OnInit, OnDestroy {
     const requestId = ++this.playRequestId;
 
     if (this.isCasting()) {
+      // Suppress the auto-advance guard: the Cast device may briefly go IDLE
+      // while transitioning to the new track, and we don't want that to
+      // trigger skip-to-next.
+      this.castTransitioning = true;
       this.castService.loadTrack(track);
 
       // Announcement — TTS plays locally while volume ducks on Cast.
