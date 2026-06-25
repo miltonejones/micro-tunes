@@ -71,6 +71,7 @@ declare namespace cast.framework {
     addEventListener(type: string, handler: (event: any) => void): void;
     playOrPause(): void;
     seek(): void;
+    setVolumeLevel(level: number): void;
   }
 }
 
@@ -186,6 +187,12 @@ export class CastService {
     if (!this.remotePlayer || !this.controller) return;
     this.remotePlayer.currentTime = Math.max(0, time);
     this.controller.seek();
+  }
+
+  /** Set the volume (0–1) on the Cast device. */
+  setVolume(level: number): void {
+    if (!this.controller) return;
+    this.controller.setVolumeLevel(Math.max(0, Math.min(1, level)));
   }
 
   /**

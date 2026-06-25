@@ -163,18 +163,20 @@ export class AudioPlayer implements OnInit, OnDestroy {
   }
 
   private async loadAndPlay(track: ITrackItem): Promise<void> {
+    const requestId = ++this.playRequestId;
+
     if (this.isCasting()) {
       this.castService.loadTrack(track);
-      return;
+    } else {
+      this.corsRetryAttempted = false;
+      this.audioAnalyser.setAvailable(true);
+      this.audioAnalyser.initialize(this.audioEl);
+      this.audioEl.crossOrigin = 'anonymous';
+      this.audioEl.src = buildPlayerUrl(track.FileKey);
     }
 
-    const requestId = ++this.playRequestId;
-    this.corsRetryAttempted = false;
-    this.audioAnalyser.setAvailable(true);
-    this.audioAnalyser.initialize(this.audioEl);
-    this.audioEl.crossOrigin = 'anonymous';
-    this.audioEl.src = buildPlayerUrl(track.FileKey);
-
+    // Announcement (TTS plays locally). When casting, the volume callbacks
+    // duck the Cast device volume so the announcement is heard clearly.
     const settings = this.announcerSettings.settings();
     if (settings.enabled) {
       this.announcing.set(true);
@@ -190,6 +192,8 @@ export class AudioPlayer implements OnInit, OnDestroy {
         () => this.setVolume(1),
       );
     }
+
+    if (this.isCasting()) return;
 
     if (requestId !== this.playRequestId) {
       return;
