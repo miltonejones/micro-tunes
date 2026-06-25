@@ -71,6 +71,8 @@ export class AudioPlayer implements OnInit, OnDestroy {
         this.track.set(track);
         if (track) {
           this.loadAndPlay(track);
+        } else {
+          this.stopInternal();
         }
       }),
     );
@@ -276,10 +278,18 @@ export class AudioPlayer implements OnInit, OnDestroy {
     if (this.isCasting()) {
       this.castService.disconnect();
     }
+    this.stopInternal();
+    this.audioPlayerCommand.clearQueue();
+  }
+
+  /** Stops current playback without touching the queue. Used when the queue is already cleared. */
+  private stopInternal(): void {
+    if (this.isCasting()) {
+      this.castService.disconnect();
+    }
     this.audioEl.pause();
     this.speechPlayback.stop();
     this.audioEl.currentTime = 0;
-    this.audioPlayerCommand.clearQueue();
     this.isExpanded.set(false);
   }
 
