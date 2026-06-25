@@ -1,5 +1,5 @@
 import { Injectable, NgZone } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Subject } from 'rxjs';
 import { ITrackItem } from './models';
 import { buildPlayerUrl } from './domain/track';
 
@@ -139,6 +139,9 @@ export class CastService {
   /** Human-readable name of the connected Cast device. */
   readonly deviceName$ = new BehaviorSubject('');
 
+  /** Emits when the device name resolution attempt completes (success or failure). */
+  readonly deviceNameResolved = new Subject<string>();
+
   /** Convenience getter for template bindings. */
   deviceName(): string {
     return this.deviceName$.value;
@@ -154,6 +157,7 @@ export class CastService {
   private remotePlayer: cast.framework.RemotePlayer | null = null;
   private controller: cast.framework.RemotePlayerController | null = null;
   private timePollId: ReturnType<typeof setInterval> | null = null;
+  private userInitiatedConnect = false;
 
   constructor(private zone: NgZone) {
     this.initWhenReady();
@@ -163,6 +167,7 @@ export class CastService {
 
   /** Open the Cast dialog so the user can pick a device. */
   connect(): void {
+    this.userInitiatedConnect = true;
     getContext()?.requestSession().catch(() => {});
   }
 
@@ -320,14 +325,23 @@ export class CastService {
     this.isConnected$.next(connected);
 
     if (connected) {
+      // Only emit the toast signal for user-initiated connects, not auto-join.
+      const emitToast = this.userInitiatedConnect;
+      this.userInitiatedConnect = false;
+
       // Try the event's session first, then fall back to context lookup.
       // The property path varies across SDK versions and device types.
       const fromEvent = extractFriendlyName(session);
       if (fromEvent) {
         this.deviceName$.next(fromEvent);
+        if (emitToast) this.deviceNameResolved.next(fromEvent);
       } else {
         // Retry from context after a brief delay for the SDK to hydrate
-        setTimeout(() => this.zone.run(() => this.deviceName$.next(extractFriendlyName(getContext()?.getCurrentSession()) ?? '')), 1500);
+        setTimeout(() => this.zone.run(() => {
+          const name = extractFriendlyName(getContext()?.getCurrentSession()) ?? '';
+          this.deviceName$.next(name);
+          if (emitToast) this.deviceNameResolved.next(name);
+        }), 1500);
       }
     } else {
       this.deviceName$.next('');
