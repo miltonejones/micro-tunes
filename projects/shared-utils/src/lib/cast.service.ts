@@ -113,7 +113,7 @@ export class CastService {
     this.controller.setVolumeLevel();
   }
 
-  loadTrack(track: ITrackItem): void {
+  loadTrack(track: ITrackItem, startTime = 0): void {
     const ctx = getContext();
     const session = ctx?.getCurrentSession();
     if (!session) return;
@@ -132,6 +132,7 @@ export class CastService {
 
     const request = new chrome.cast.media.LoadRequest(mediaInfo);
     request.autoplay = true;
+    if (startTime > 0) request.currentTime = startTime;
     session.loadMedia(request).catch(() => {});
   }
 

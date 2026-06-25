@@ -129,18 +129,6 @@
   flex: 1;
 }
 
-.cast-volume {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  color: var(--text-secondary);
-  font-size: 0.85rem;
-}
-
-.cast-volume-slider {
-  width: 4rem;
-}
-
 .audio-player-time {
   font-size: 0.75rem;
   color: var(--text-secondary);
