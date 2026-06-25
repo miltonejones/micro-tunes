@@ -282,11 +282,10 @@ export class AudioPlayer implements OnInit, OnDestroy {
     this.audioPlayerCommand.clearQueue();
   }
 
-  /** Stops current playback without touching the queue. Used when the queue is already cleared. */
+  /** Stops current playback without touching the queue. Does NOT disconnect Cast —
+   *  that only happens from the user-facing stop() method, so auto-join sessions
+   *  survive the initial null emission from currentTrack$. */
   private stopInternal(): void {
-    if (this.isCasting()) {
-      this.castService.disconnect();
-    }
     this.audioEl.pause();
     this.speechPlayback.stop();
     this.audioEl.currentTime = 0;
