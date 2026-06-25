@@ -45,9 +45,7 @@ export class AudioVisualizer implements OnInit, AfterViewInit, OnDestroy {
   );
 
   showPanel = computed(
-    () =>
-      this.isVisible() ||
-      (this.hasTrack() && this.isCasting() && this.visualizerPanel.isOpen()),
+    () => this.hasTrack() && !this.isCasting() && this.visualizerPanel.isOpen(),
   );
 
   ngOnInit(): void {

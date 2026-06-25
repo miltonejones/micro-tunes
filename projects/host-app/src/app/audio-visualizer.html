@@ -1,12 +1,5 @@
 @if (showPanel()) {
   <div class="audio-visualizer">
-    @if (isCasting()) {
-      <div class="audio-visualizer__cast-overlay">
-        <i class="fa-solid fa-broadcast-tower"></i>
-        <span>Casting</span>
-      </div>
-    } @else {
-      <canvas #canvasEl width="360" height="120"></canvas>
-    }
+    <canvas #canvasEl width="360" height="120"></canvas>
   </div>
 }
