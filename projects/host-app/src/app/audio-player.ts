@@ -191,16 +191,10 @@ export class AudioPlayer implements OnInit, OnDestroy {
         () => this.setVolume(1),
         () => this.setVolume(1),
       );
+      this.announcing.set(false);
     }
 
     if (this.isCasting()) return;
-
-    if (requestId !== this.playRequestId) {
-      return;
-    }
-
-    this.announcing.set(false);
-    this.play();
   }
 
   /** Load a track on the native <audio> element, optionally seeking to a position. */
