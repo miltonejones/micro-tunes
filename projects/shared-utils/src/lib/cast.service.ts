@@ -320,12 +320,15 @@ export class CastService {
     this.isConnected$.next(connected);
 
     if (connected) {
-      this.deviceName$.next(
-        (session as any)?.receiver?.friendlyName ??
-        (session as any)?.receiver?.displayName ??
-        (session as any)?.friendlyName ??
-        '',
-      );
+      // Try the event's session first, then fall back to context lookup.
+      // The property path varies across SDK versions and device types.
+      const fromEvent = extractFriendlyName(session);
+      if (fromEvent) {
+        this.deviceName$.next(fromEvent);
+      } else {
+        // Retry from context after a brief delay for the SDK to hydrate
+        setTimeout(() => this.zone.run(() => this.deviceName$.next(extractFriendlyName(getContext()?.getCurrentSession()) ?? '')), 1500);
+      }
     } else {
       this.deviceName$.next('');
       this.isPlaying$.next(false);
@@ -384,5 +387,19 @@ function sdkLoaded(): boolean {
     typeof cast !== 'undefined' &&
     typeof cast.framework !== 'undefined' &&
     typeof cast.framework.CastContext !== 'undefined'
+  );
+}
+
+/** Try several common property paths for the Cast device name. */
+function extractFriendlyName(session: any): string | null {
+  if (!session) return null;
+  return (
+    session?.receiver?.friendlyName ??
+    session?.receiver?.displayName ??
+    session?.receiver?.name ??
+    session?.friendlyName ??
+    session?.displayName ??
+    session?.name ??
+    null
   );
 }
