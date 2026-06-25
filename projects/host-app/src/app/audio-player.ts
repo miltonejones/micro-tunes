@@ -59,7 +59,6 @@ export class AudioPlayer implements OnInit, OnDestroy {
   private corsRetryAttempted = false;
   private castTransitioning = false;
   private wakeLock: WakeLockSentinel | null = null;
-
   progress = computed(() => (this.duration() ? (this.currentTime() / this.duration()) * 100 : 0));
   currentTimeLabel = computed(() => formatDuration(this.currentTime()));
   durationLabel = computed(() => formatDuration(this.duration()));

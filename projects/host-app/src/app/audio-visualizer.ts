@@ -95,8 +95,8 @@ export class AudioVisualizer implements OnInit, AfterViewInit, OnDestroy {
     for (let i = 0; i < bufferLength; i++) {
       const barHeight = (this.dataArray[i] / 255) * height;
       const gradient = ctx.createLinearGradient(0, height - barHeight, 0, height);
-      gradient.addColorStop(0, BAR_GRADIENT_START);
-      gradient.addColorStop(1, BAR_GRADIENT_END);
+      gradient.addColorStop(0, BAR_GRADIENT_END);
+      gradient.addColorStop(1, BAR_GRADIENT_START);
       ctx.fillStyle = gradient;
       ctx.fillRect(x, height - barHeight, barWidth, barHeight);
       x += barWidth + 1;
