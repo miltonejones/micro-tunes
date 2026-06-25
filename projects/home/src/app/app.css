@@ -36,6 +36,7 @@
   background: linear-gradient(to top, rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 0.1) 55%, transparent 80%);
   color: #fff !important;
   mix-blend-mode: difference;
+  bottom: 20px;
 }
 
 .carousel-title {
@@ -49,6 +50,32 @@
   font-size: 1rem;
   opacity: 0.85;
   margin-top: 0.15rem;
+}
+
+.carousel-artist-link {
+  position: absolute;
+  bottom: 1.25rem;
+  right: 1.5rem;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.9rem;
+  border-radius: var(--radius-pill);
+  background: var(--accent-gradient);
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+  box-shadow: var(--shadow-md);
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.carousel-artist-link:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
 }
 
 .carousel-control {

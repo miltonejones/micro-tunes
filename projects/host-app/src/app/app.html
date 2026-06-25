@@ -8,7 +8,10 @@
   </a>
 
   <nav class="d-flex flex-nowrap gap-1" role="group">
-    <a routerLink="/" [class.btn-primary]="activeSection() === 'home'" class="btn d-none d-sm-inline-flex"
+    <a
+      routerLink="/"
+      [class.btn-primary]="activeSection() === 'home'"
+      class="btn d-none d-sm-inline-flex"
       ><i class="fa-solid fa-house"></i> <span class="btn-label">Home</span></a
     >
     <a
@@ -38,9 +41,6 @@
     <a [routerLink]="['/list', 1]" [class.btn-primary]="activeSection() === 'library'" class="btn"
       ><i class="fa-solid fa-music"></i> <span class="btn-label">Library</span></a
     >
-    <button type="button" class="btn" (click)="settingsPanel.toggle()">
-      <i class="fa-solid fa-gear"></i> <span class="btn-label">Settings</span>
-    </button>
   </nav>
 
   <button type="button" class="btn search-toggle" (click)="openSearch()">
@@ -56,6 +56,15 @@
       <i class="fa-solid fa-magnifying-glass"></i>
     </button>
   </form>
+
+  <button
+    type="button"
+    class="btn settings-toggle"
+    aria-label="Settings"
+    (click)="settingsPanel.toggle()"
+  >
+    <i class="fa-solid fa-gear"></i>
+  </button>
 </div>
 
 <router-outlet />
