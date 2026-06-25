@@ -5,6 +5,7 @@ import {
   OnInit,
   ViewChild,
   computed,
+  effect,
   inject,
   signal,
 } from '@angular/core';
@@ -263,6 +264,17 @@ export class AudioPlayer implements OnInit, OnDestroy {
     this.wakeLock = null;
   }
 
+  constructor() {
+    // Keep the screen awake whenever audio is playing (local or Cast).
+    effect(() => {
+      if (this.isPlaying()) {
+        this.acquireWakeLock();
+      } else {
+        this.releaseWakeLock();
+      }
+    });
+  }
+
   // ── Public methods ───────────────────────────────────────────────────────────
 
   play(): void {
@@ -277,7 +289,6 @@ export class AudioPlayer implements OnInit, OnDestroy {
     }
     this.audioEl.play().catch((error) => console.error('Play failed:', error));
     this.speechPlayback.resume();
-    this.acquireWakeLock();
   }
 
   pause(): void {
@@ -287,7 +298,6 @@ export class AudioPlayer implements OnInit, OnDestroy {
     }
     this.audioEl.pause();
     this.speechPlayback.pause();
-    this.releaseWakeLock();
   }
 
   togglePlayPause(): void {
@@ -311,7 +321,6 @@ export class AudioPlayer implements OnInit, OnDestroy {
     this.speechPlayback.stop();
     this.audioEl.currentTime = 0;
     this.isExpanded.set(false);
-    this.releaseWakeLock();
   }
 
   seekTo(time: number): void {
