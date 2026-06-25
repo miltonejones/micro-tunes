@@ -319,18 +319,7 @@ export class CastService {
     this.isConnected$.next(connected);
 
     if (connected) {
-      // Pull the device name from the current session. Give the SDK a brief
-      // moment to populate the receiver details, retrying once if needed.
-      const name = getContext()?.getCurrentSession()?.receiver?.friendlyName;
-      if (name) {
-        this.deviceName$.next(name);
-      } else {
-        // The receiver details may not be ready yet — retry after a short delay.
-        setTimeout(() => {
-          const retryName = getContext()?.getCurrentSession()?.receiver?.friendlyName ?? '';
-          this.deviceName$.next(retryName);
-        }, 1000);
-      }
+      this.pollDeviceName(5);
     } else {
       this.deviceName$.next('');
       this.isPlaying$.next(false);
@@ -340,6 +329,22 @@ export class CastService {
       this.stopTimePoll();
     }
   }
+
+  /** Poll for the Cast device name every 500 ms for up to 5 seconds after connecting. */
+  private pollDeviceName(retriesLeft: number): void {
+    const session = getContext()?.getCurrentSession();
+    const receiver = (session as any)?.receiver;
+    const name = (receiver?.friendlyName ?? receiver?.displayName ?? '') as string;
+    if (name) {
+      this.deviceName$.next(name);
+      return;
+    }
+    // Debug log to help identify the correct property path
+    console.debug('[CastService] receiver object:', receiver);
+    if (retriesLeft <= 0) return;
+    setTimeout(() => this.pollDeviceName(retriesLeft - 1), 500);
+  }
+
 
   // ── Availability ─────────────────────────────────────────────────────────────
 
