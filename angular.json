@@ -100,7 +100,8 @@
           },
           "defaultConfiguration": "development",
           "options": {
-            "port": 4200
+            "port": 4200,
+            "host": "0.0.0.0"
           }
         }
       }
@@ -193,7 +194,8 @@
           },
           "defaultConfiguration": "development",
           "options": {
-            "port": 4301
+            "port": 4301,
+            "host": "0.0.0.0"
           }
         }
       }
@@ -286,7 +288,8 @@
           },
           "defaultConfiguration": "development",
           "options": {
-            "port": 4302
+            "port": 4302,
+            "host": "0.0.0.0"
           }
         }
       }
@@ -379,7 +382,8 @@
           },
           "defaultConfiguration": "development",
           "options": {
-            "port": 4303
+            "port": 4303,
+            "host": "0.0.0.0"
           }
         }
       }
@@ -498,7 +502,8 @@
           },
           "defaultConfiguration": "development",
           "options": {
-            "port": 4304
+            "port": 4304,
+            "host": "0.0.0.0"
           }
         }
       }
