@@ -54,7 +54,7 @@
 
 .carousel-artist-link {
   position: absolute;
-  bottom: 1.25rem;
+  top: 1.25rem;
   right: 1.5rem;
   z-index: 2;
   display: inline-flex;

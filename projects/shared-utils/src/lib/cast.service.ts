@@ -107,6 +107,10 @@ export class CastService {
     this.controller.seek();
   }
 
+  getVolume(): number {
+    return this.remotePlayer?.volumeLevel ?? 1;
+  }
+
   setVolume(level: number): void {
     if (!this.remotePlayer || !this.controller) return;
     this.remotePlayer.volumeLevel = Math.max(0, Math.min(1, level));

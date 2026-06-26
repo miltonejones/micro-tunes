@@ -1,8 +1,5 @@
 .audio-visualizer {
-  position: fixed;
-  right: 1rem;
-  bottom: 88px;
-  z-index: 90;
+  margin: 1rem 1rem 0 auto;
   width: 400px;
   max-width: calc(100vw - 2rem);
   padding: 0.5rem;
@@ -38,7 +35,7 @@
 
 @media (max-width: 576px) {
   .audio-visualizer {
-    bottom: 120px;
-    width: calc(100vw - 2rem);
+    margin: 0.75rem 0.75rem 0 auto;
+    width: calc(100vw - 1.5rem);
   }
 }

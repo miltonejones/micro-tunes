@@ -59,6 +59,7 @@ export class AudioPlayer implements OnInit, OnDestroy {
   private corsRetryAttempted = false;
   private castTransitioning = false;
   private wakeLock: WakeLockSentinel | null = null;
+  private originalVolume = 1;
   progress = computed(() => (this.duration() ? (this.currentTime() / this.duration()) * 100 : 0));
   currentTimeLabel = computed(() => formatDuration(this.currentTime()));
   durationLabel = computed(() => formatDuration(this.duration()));
@@ -189,9 +190,12 @@ export class AudioPlayer implements OnInit, OnDestroy {
         await this.announcementCommand.announceTrackChange(
           track.artistName, track.Title, track.trackTime,
           settings.name, settings.zip, settings.chatType,
-          () => this.setVolume(ANNOUNCING_VOLUME),
-          () => this.setVolume(1),
-          () => this.setVolume(1),
+          () => {
+            this.originalVolume = this.castService.getVolume();
+            this.setVolume(ANNOUNCING_VOLUME);
+          },
+          () => this.setVolume(this.originalVolume),
+          () => this.setVolume(this.originalVolume),
         );
       }
 
@@ -212,9 +216,12 @@ export class AudioPlayer implements OnInit, OnDestroy {
       await this.announcementCommand.announceTrackChange(
         track.artistName, track.Title, track.trackTime,
         settings.name, settings.zip, settings.chatType,
-        () => this.setVolume(ANNOUNCING_VOLUME),
-        () => this.setVolume(1),
-        () => this.setVolume(1),
+        () => {
+          this.originalVolume = this.audioEl.volume;
+          this.setVolume(ANNOUNCING_VOLUME);
+        },
+        () => this.setVolume(this.originalVolume),
+        () => this.setVolume(this.originalVolume),
       );
     }
 

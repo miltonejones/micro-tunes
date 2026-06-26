@@ -191,9 +191,17 @@ body {
     var(--bg);
 }
 
+body.track-playing {
+  padding-bottom: 8rem;
+}
+
 @media (max-width: 576px) {
   body {
     padding-top: 3.5rem;
+  }
+
+  body.track-playing {
+    padding-bottom: 9rem;
   }
 }
 

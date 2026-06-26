@@ -7,41 +7,51 @@
     <span class="brand-name">SkyTunes</span>
   </a>
 
-  <nav class="d-flex flex-nowrap gap-1" role="group">
-    <a
-      routerLink="/"
-      [class.btn-primary]="activeSection() === 'home'"
-      class="btn d-none d-sm-inline-flex"
-      ><i class="fa-solid fa-house"></i> <span class="btn-label">Home</span></a
-    >
-    <a
-      [routerLink]="['/grid', 'artist', 1]"
-      [class.btn-primary]="activeSection() === 'artist'"
-      class="btn"
-      ><i class="fa-solid fa-microphone"></i> <span class="btn-label">Artists</span></a
-    >
-    <a
-      [routerLink]="['/grid', 'album', 1]"
-      [class.btn-primary]="activeSection() === 'album'"
-      class="btn"
-      ><i class="fa-solid fa-compact-disc"></i> <span class="btn-label">Albums</span></a
-    >
-    <a
-      [routerLink]="['/grid', 'genre', 1]"
-      [class.btn-primary]="activeSection() === 'genre'"
-      class="btn"
-      ><i class="fa-solid fa-tags"></i> <span class="btn-label">Genres</span></a
-    >
-    <a
-      [routerLink]="['/grid', 'playlist', 1]"
-      [class.btn-primary]="activeSection() === 'playlist'"
-      class="btn"
-      ><i class="fa-solid fa-list-ul"></i> <span class="btn-label">Playlists</span></a
-    >
-    <a [routerLink]="['/list', 1]" [class.btn-primary]="activeSection() === 'library'" class="btn"
-      ><i class="fa-solid fa-music"></i> <span class="btn-label">Library</span></a
-    >
+  <nav class="d-none d-sm-flex flex-nowrap gap-1" role="group">
+    @for (item of NAV_ITEMS; track item.section) {
+      <a
+        [routerLink]="item.routerLink"
+        [class.btn-primary]="activeSection() === item.section"
+        class="btn"
+      >
+        <i class="fa-solid" [class]="item.icon"></i>
+        <span class="btn-label">{{ item.label }}</span>
+      </a>
+    }
   </nav>
+
+  <div class="mobile-nav-dropdown d-sm-none">
+    <button
+      type="button"
+      class="btn mobile-nav-toggle"
+      (click)="navDropdownOpen.set(!navDropdownOpen())"
+      [class.active]="navDropdownOpen()"
+    >
+      @if (activeItem(); as active) {
+        <i class="fa-solid" [class]="active.icon"></i>
+        <span>{{ active.label }}</span>
+      }
+      <i class="fa-solid fa-chevron-down"></i>
+    </button>
+
+    @if (navDropdownOpen()) {
+      <ul class="mobile-nav-menu">
+        @for (item of NAV_ITEMS; track item.section) {
+          <li>
+            <button
+              type="button"
+              class="mobile-nav-option"
+              [class.active]="activeSection() === item.section"
+              (click)="navigateTo(item)"
+            >
+              <i class="fa-solid" [class]="item.icon"></i>
+              <span>{{ item.label }}</span>
+            </button>
+          </li>
+        }
+      </ul>
+    }
+  </div>
 
   <button type="button" class="btn search-toggle" (click)="openSearch()">
     <i class="fa-solid fa-magnifying-glass"></i>
