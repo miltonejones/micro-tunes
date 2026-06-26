@@ -11,6 +11,7 @@ import {
   ImgFallbackDirective,
   IPlaylistSummary,
   ITrackItem,
+  LoadingAnimation,
   MediaCard,
 } from 'shared-utils';
 
@@ -29,7 +30,7 @@ const LIST_TYPE_LABELS: Record<Exclude<ListType, 'library'>, string> = {
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, RouterLink, ImgFallbackDirective, Breadcrumbs],
+  imports: [RouterOutlet, RouterLink, ImgFallbackDirective, Breadcrumbs, LoadingAnimation],
   templateUrl: './app.html',
   styleUrl: './app.css',
 })

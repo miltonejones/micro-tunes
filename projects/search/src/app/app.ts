@@ -7,6 +7,7 @@ import {
   IGridItem,
   ImgFallbackDirective,
   ITrackItem,
+  LoadingAnimation,
   MediaCard,
 } from 'shared-utils';
 
@@ -14,7 +15,7 @@ type ResultTab = 'artists' | 'albums' | 'tracks';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, MediaCard, ImgFallbackDirective],
+  imports: [RouterOutlet, MediaCard, ImgFallbackDirective, LoadingAnimation],
   templateUrl: './app.html',
   styleUrl: './app.css',
 })

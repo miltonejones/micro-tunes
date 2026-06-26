@@ -1,6 +1,6 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink, RouterOutlet } from '@angular/router';
-import { Breadcrumbs, BreadcrumbItem, CatalogQueryService, IGridItem, MediaCard } from 'shared-utils';
+import { Breadcrumbs, BreadcrumbItem, CatalogQueryService, IGridItem, LoadingAnimation, MediaCard } from 'shared-utils';
 
 const PAGE_SIZE = 100;
 
@@ -15,7 +15,7 @@ const GRID_TYPE_LABELS: Record<GridType, string> = {
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, RouterLink, MediaCard, Breadcrumbs],
+  imports: [RouterOutlet, RouterLink, MediaCard, Breadcrumbs, LoadingAnimation],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })

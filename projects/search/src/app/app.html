@@ -1,7 +1,7 @@
 <h2>Search results for &ldquo;{{ query() }}&rdquo;</h2>
 
 @if (loading()) {
-  <p><i class="fa-solid fa-spinner fa-spin"></i> Searching...</p>
+  <lib-loading-animation variant="visualizer" label="Searching" />
 } @else if (error()) {
   <p class="error"><i class="fa-solid fa-triangle-exclamation"></i> {{ error() }}</p>
 } @else if (!hasResults()) {
