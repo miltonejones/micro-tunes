@@ -1,7 +1,7 @@
 <!-- <h2>Home remote</h2> -->
 
 @if (loading()) {
-  <p><i class="fa-solid fa-spinner fa-spin"></i> Loading dashboard...</p>
+  <lib-loading-animation variant="visualizer" label="Loading dashboard" />
 } @else if (error()) {
   <p class="error"><i class="fa-solid fa-triangle-exclamation"></i> {{ error() }}</p>
 } @else {

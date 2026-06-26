@@ -1,6 +1,6 @@
 import { Component, inject, OnDestroy, OnInit, signal, computed } from '@angular/core';
 import { RouterLink, RouterOutlet } from '@angular/router';
-import { CatalogQueryService, DashItem, ImgFallbackDirective, IPlaylistSummary, MediaCard } from 'shared-utils';
+import { CatalogQueryService, DashItem, ImgFallbackDirective, IPlaylistSummary, LoadingAnimation, MediaCard } from 'shared-utils';
 
 const TRACK_COUNT_PATTERN = /(\d+)\s*tracks?/i;
 const CAROUSEL_INTERVAL_MS = 5000;
@@ -20,7 +20,7 @@ function pickRandom<T>(items: T[], count: number): T[] {
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, RouterLink, MediaCard, ImgFallbackDirective],
+  imports: [RouterOutlet, RouterLink, MediaCard, ImgFallbackDirective, LoadingAnimation],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })

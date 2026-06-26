@@ -31,3 +31,5 @@ export { ImgFallbackDirective } from './lib/img-fallback.directive';
 export { MediaCard } from './lib/media-card';
 export { Breadcrumbs } from './lib/breadcrumbs';
 export type { BreadcrumbItem } from './lib/breadcrumbs';
+export { LoadingAnimation } from './lib/loading-animation';
+export type { LoadingVariant } from './lib/loading-animation';
