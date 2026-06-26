@@ -93,7 +93,13 @@ export class CastService {
 
   constructor(private zone: NgZone, private toast: ToastService) { this.initWhenReady(); }
 
-  connect(): void { getContext()?.requestSession().catch(() => {}); }
+  connect(): void {
+    getContext()?.requestSession().catch((err: any) => {
+      console.warn('[CastService] requestSession failed:', err);
+      const reason = err?.description || err?.code || 'unknown error';
+      this.toast.show(`Cast failed: ${reason}`);
+    });
+  }
 
   disconnect(): void { getContext()?.endCurrentSession(true); }
 
